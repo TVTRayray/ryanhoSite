@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { SITE, fmtDate } from '../site';
+import { TOOLS, toolHref } from '../tools';
+
+const posts = (await getCollection('posts', (p) => !p.data.draft))
+	.sort((a, b) => +b.data.date - +a.data.date)
+	.slice(0, 5);
+---
+<Base>
+	<h1>{SITE.tagline}</h1>
+	<p class="lede">{SITE.description}</p>
+
+	<p class="label">最近文章</p>
+	<ul class="list">
+		{posts.map((p) => (
+			<li>
+				<a href={`/posts/${p.id}/`}>
+					<time datetime={p.data.date.toISOString()}>{fmtDate(p.data.date)}</time>
+					<span><strong>{p.data.title}</strong><span class="desc">{p.data.description}</span></span>
+				</a>
+			</li>
+		))}
+	</ul>
+
+	<p class="label">工具</p>
+	<ul class="list">
+		{TOOLS.map((t) => (
+			<li>
+				<a href={toolHref(t)}>
+					<span class="kind">tool</span>
+					<span><strong>{t.name}</strong><span class="desc">{t.desc}</span></span>
+				</a>
+			</li>
+		))}
+	</ul>
+</Base>

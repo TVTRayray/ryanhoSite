@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { fmtDate } from '../../site';
+
+const posts = (await getCollection('posts', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
+---
+<Base title="文章">
+	<h1>文章</h1>
+	<ul class="list">
+		{posts.map((p) => (
+			<li>
+				<a href={`/posts/${p.id}/`}>
+					<time datetime={p.data.date.toISOString()}>{fmtDate(p.data.date)}</time>
+					<span><strong>{p.data.title}</strong><span class="desc">{p.data.description}</span></span>
+				</a>
+			</li>
+		))}
+	</ul>
+</Base>

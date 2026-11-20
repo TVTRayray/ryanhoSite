@@ -1,0 +1,32 @@
+ryanho.cc.cd {
+	root * /var/www/agent-notes
+	encode zstd gzip
+	file_server
+
+	@hashed path /_astro/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+	header X-Content-Type-Options nosniff
+
+	handle_errors {
+		respond "{err.status_code} {err.status_text}" {err.status_code}
+	}
+}
+
+www.ryanho.cc.cd {
+	redir https://ryanho.cc.cd{uri} permanent
+}
+
+# omni-tools(github.com/iib0011/omni-tools):纯前端单页应用,构建产物在 /var/www/omni-tools
+tools.ryanho.cc.cd {
+	root * /var/www/omni-tools
+	encode zstd gzip
+	try_files {path} /index.html
+	file_server
+
+	# 只给带内容哈希的构建产物长缓存;public/ 里原样复制的文件不带哈希,不能永久缓存
+	@hashed path_regexp hashed -[A-Za-z0-9_-]{8}\.(js|css|wasm)$
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+	@html path / /index.html
+	header @html Cache-Control "no-cache"
+	header X-Content-Type-Options nosniff
+}

@@ -1,0 +1,37 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="指令文件体积估算" description="粘贴 AGENTS.md / CLAUDE.md,估算它每轮对话占用多少上下文。">
+	<h1>指令文件体积估算</h1>
+	<p class="lede">AGENTS.md、CLAUDE.md 这类文件会随每次会话载入上下文。粘贴进来,看看它有多重。</p>
+
+	<textarea id="src" placeholder="把指令文件内容粘贴到这里…" spellcheck="false"></textarea>
+
+	<div class="stats">
+		<div class="stat"><b id="chars">0</b><span>字符</span></div>
+		<div class="stat"><b id="lines">0</b><span>行</span></div>
+		<div class="stat"><b id="cjk">0</b><span>中日韩字符</span></div>
+		<div class="stat"><b id="tokens">0</b><span>估算 token</span></div>
+	</div>
+	<p class="note">
+		token 数是粗略估算:中日韩字符按每字 1 个、其余按每 4 个字符 1 个计算。不同模型的分词器结果不同,误差可达两三成,只适合比较量级。计算在浏览器本地完成,内容不会上传。
+	</p>
+</Base>
+
+<script>
+	const $ = (id: string) => document.getElementById(id)!;
+	const src = $('src') as HTMLTextAreaElement;
+	const fmt = (n: number) => n.toLocaleString('en-US');
+
+	function update() {
+		const text = src.value;
+		const chars = [...text].length;
+		const cjk = (text.match(/[぀-ヿ㐀-鿿가-힯＀-￯]/g) ?? []).length;
+		$('chars').textContent = fmt(chars);
+		$('lines').textContent = fmt(text ? text.split('\n').length : 0);
+		$('cjk').textContent = fmt(cjk);
+		$('tokens').textContent = fmt(Math.round(cjk + (chars - cjk) / 4));
+	}
+	src.addEventListener('input', update);
+	update();
+</script>

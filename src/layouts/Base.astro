@@ -1,0 +1,81 @@
+---
+import '../styles/global.css';
+import { SITE } from '../site';
+
+interface Props { title?: string; description?: string }
+const { title, description = SITE.description } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} — ${SITE.tagline}`;
+const path = Astro.url.pathname;
+const nav = [
+	{ href: '/', label: '首页', on: path === '/' },
+	{ href: '/posts/', label: '文章', on: path.startsWith('/posts') },
+	{ href: '/tools/', label: '工具', on: path.startsWith('/tools') },
+];
+---
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>{fullTitle}</title>
+		<meta name="description" content={description} />
+		<meta property="og:title" content={fullTitle} />
+		<meta property="og:description" content={description} />
+		<!-- 绘制前应用保存的主题,避免先闪一下系统配色 -->
+		<script is:inline>
+			try {
+				var t = localStorage.getItem('theme');
+				if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+			} catch (e) {}
+		</script>
+	</head>
+	<body>
+		<div class="wrap">
+			<header class="site-head">
+				<a class="brand" href="/">{SITE.name}</a>
+				<nav>
+					{nav.map((n) => <a href={n.href} aria-current={n.on ? 'page' : undefined}>{n.label}</a>)}
+					<button class="theme-toggle" type="button" aria-label="切换主题" title="切换主题">
+						<svg class="i-system" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></svg>
+						<svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+						<svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></svg>
+					</button>
+				</nav>
+			</header>
+			<main><slot /></main>
+			<footer class="site-foot">{SITE.name} · 静态构建,无追踪脚本</footer>
+		</div>
+		<!-- 主题切换:跟随系统 → 浅色 → 深色。文章里的交互图([data-figure])自带明暗,同步设置它的 data-theme -->
+		<script is:inline>
+			(function () {
+				var root = document.documentElement;
+				var btn = document.querySelector('.theme-toggle');
+				var order = ['system', 'light', 'dark'];
+				var names = { system: '跟随系统', light: '浅色', dark: '深色' };
+				var current = function () { return root.dataset.theme || 'system'; };
+				function apply(t) {
+					if (t === 'system') delete root.dataset.theme;
+					else root.dataset.theme = t;
+					document.querySelectorAll('[data-figure]').forEach(function (f) {
+						if (t === 'system') f.removeAttribute('data-theme');
+						else f.setAttribute('data-theme', t);
+					});
+					var next = order[(order.indexOf(t) + 1) % order.length];
+					var label = '主题:' + names[t] + ',点击切换为' + names[next];
+					btn.setAttribute('aria-label', label);
+					btn.title = label;
+				}
+				apply(current());
+				btn.addEventListener('click', function () {
+					var t = order[(order.indexOf(current()) + 1) % order.length];
+					apply(t);
+					try {
+						if (t === 'system') localStorage.removeItem('theme');
+						else localStorage.setItem('theme', t);
+					} catch (e) {}
+				});
+			})();
+		</script>
+	</body>
+</html>
