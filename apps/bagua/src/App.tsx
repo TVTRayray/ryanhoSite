@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   BookOpen,
+  Coins,
   Compass,
   GitBranch,
   ArrowLeft,
@@ -24,9 +25,15 @@ import { FoundationsPrimer } from './components/FoundationsPrimer';
 import { MingpanWheel } from './components/MingpanWheel';
 import { TrigramInspector } from './components/TrigramInspector';
 import { WorkshopHub } from './components/WorkshopHub';
+import { DivinationCoins } from './components/DivinationCoins';
 import { KnowledgeGlossary } from './components/KnowledgeGlossary';
 
-type ActiveTab = 'foundations' | 'mingpan' | 'workshop' | 'glossary';
+type ActiveTab =
+  | 'foundations'
+  | 'mingpan'
+  | 'workshop'
+  | 'divination'
+  | 'glossary';
 // 与主站 ryanho.cc.cd 共用的主题偏好:localStorage 'theme' 为 light / dark,缺省跟随系统。
 // index.html 里的内联脚本在绘制前已应用它,这里只负责读取和切换。
 type ThemeMode = 'system' | 'light' | 'dark';
@@ -126,7 +133,7 @@ export const App: React.FC = () => {
                 八卦基础命盘 · 阴阳五行科普图鉴
               </h1>
               <p className="brand-subtitle">
-                四步渐进式科普：基础入门 → 交互命盘实操 → 爻变与五行推演 → 对照总表
+                五步渐进式科普：基础入门 → 交互命盘 → 爻变五行 → 六爻铜钱卜卦 → 对照总表
               </p>
             </div>
           </div>
@@ -158,11 +165,19 @@ export const App: React.FC = () => {
             </button>
             <button
               type="button"
+              className={`nav-tab ${activeTab === 'divination' ? 'active' : ''}`}
+              onClick={() => setActiveTab('divination')}
+            >
+              <Coins size={15} />
+              4. 铜钱卜卦
+            </button>
+            <button
+              type="button"
               className={`nav-tab ${activeTab === 'glossary' ? 'active' : ''}`}
               onClick={() => setActiveTab('glossary')}
             >
               <BookOpen size={15} />
-              4. 总表与边界
+              5. 总表与边界
             </button>
           </nav>
 
@@ -195,7 +210,8 @@ export const App: React.FC = () => {
               {activeTab === 'foundations' && '第 1 站 · 零基础入门'}
               {activeTab === 'mingpan' && '第 2 站 · 命盘全景实操'}
               {activeTab === 'workshop' && '第 3 站 · 底层数理推演'}
-              {activeTab === 'glossary' && '第 4 站 · 体系边界与索引'}
+              {activeTab === 'divination' && '第 4 站 · 六爻铜钱占卜'}
+              {activeTab === 'glossary' && '第 5 站 · 体系边界与索引'}
             </span>
             <span>
               {activeTab === 'foundations' &&
@@ -204,6 +220,8 @@ export const App: React.FC = () => {
                 '试着切换“先天 ↔ 后天”观看八宫平滑移位动画，或开启“十二时辰流转演示”观察日辰如何沿盘行进。'}
               {activeTab === 'workshop' &&
                 '动手翻动三根爻画观察二进制生卦，并在动态粒子流中理解五行相生相克的能量循环。'}
+              {activeTab === 'divination' &&
+                '体验传统“三钱六爻起卦法”：点击掷出三枚铜钱六次，自下而上成六十四别卦，并自动推演动爻与变卦。'}
               {activeTab === 'glossary' &&
                 '完整中英文对照检索表，以及“通用命盘科普”与“专业术数推演”的知识边界声明。'}
             </span>
@@ -402,16 +420,21 @@ export const App: React.FC = () => {
           <WorkshopHub onJumpToMingpan={jumpToMingpanTrigram} />
         )}
 
-        {/* View 4: Glossary & Scope */}
+        {/* View 4: Six-Yao Coin Divination */}
+        {activeTab === 'divination' && (
+          <DivinationCoins onJumpToMingpan={jumpToMingpanTrigram} />
+        )}
+
+        {/* View 5: Glossary & Scope */}
         {activeTab === 'glossary' && (
           <KnowledgeGlossary onJumpToTrigram={jumpToMingpanTrigram} />
         )}
       </main>
 
       <footer className="footer-note">
-        <span>八卦与五行基础命盘科普示意</span>
+        <span>八卦与五行基础命盘科普示意 · 六十四卦铜钱卜卦互动版</span>
         <span>
-          参考资料见「4. 总表与边界」及{' '}
+          参考资料见「5. 总表与边界」及{' '}
           <a
             className="font-mono-code"
             href="https://github.com/TVTRayray/ryanhoSite/blob/main/apps/bagua/refer.md"
