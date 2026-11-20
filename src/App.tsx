@@ -2,30 +2,33 @@ import React, { useEffect, useState } from 'react';
 import {
   BookOpen,
   Compass,
-  Flame,
   GitBranch,
+  GraduationCap,
   Layers,
   Moon,
+  Pause,
+  Play,
   Sun,
 } from 'lucide-react';
 import {
   ArrangementMode,
+  EARTHLY_BRANCHES,
   ELEMENTS,
   OrientationMode,
   TRIGRAM_LIST,
   TrigramId,
 } from './data/baguaData';
+import { FoundationsPrimer } from './components/FoundationsPrimer';
 import { MingpanWheel } from './components/MingpanWheel';
 import { TrigramInspector } from './components/TrigramInspector';
-import { YaoLab } from './components/YaoLab';
-import { WuXingMatrix } from './components/WuXingMatrix';
+import { WorkshopHub } from './components/WorkshopHub';
 import { KnowledgeGlossary } from './components/KnowledgeGlossary';
 
-type ActiveTab = 'mingpan' | 'yao-lab' | 'wuxing' | 'glossary';
+type ActiveTab = 'foundations' | 'mingpan' | 'workshop' | 'glossary';
 type ThemeMode = 'ink' | 'paper';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('mingpan');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('foundations');
   const [theme, setTheme] = useState<ThemeMode>('ink');
   const [arrangement, setArrangement] = useState<ArrangementMode>('houtian');
   const [orientation, setOrientation] = useState<OrientationMode>('south-up');
@@ -36,14 +39,56 @@ export const App: React.FC = () => {
   const [showRelations, setShowRelations] = useState(true);
   const [showOrderPath, setShowOrderPath] = useState(false);
 
+  // 十二时辰巡盘演示状态
+  const [isTimePlaying, setIsTimePlaying] = useState(false);
+  const [activeBranchIndex, setActiveBranchIndex] = useState<number | null>(
+    null
+  );
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  const jumpToMingpanTrigram = (id: TrigramId) => {
+  useEffect(() => {
+    if (!isTimePlaying) return;
+    const timer = window.setInterval(() => {
+      setActiveBranchIndex((prev) => {
+        const nextIdx = prev === null ? 6 : (prev + 1) % EARTHLY_BRANCHES.length; // 从子时(索引6)起顺流
+        setSelectedTrigram(EARTHLY_BRANCHES[nextIdx].trigramId);
+        return nextIdx;
+      });
+    }, 1150);
+    return () => window.clearInterval(timer);
+  }, [isTimePlaying]);
+
+  const toggleTimeTour = () => {
+    if (!isTimePlaying) {
+      setArrangement('houtian');
+      setShowBranches(true);
+      const startIdx = activeBranchIndex ?? 6; // 子时起
+      setActiveBranchIndex(startIdx);
+      setSelectedTrigram(EARTHLY_BRANCHES[startIdx].trigramId);
+      setIsTimePlaying(true);
+    } else {
+      setIsTimePlaying(false);
+    }
+  };
+
+  const handleManualSelectTrigram = (id: TrigramId) => {
+    setIsTimePlaying(false);
+    setActiveBranchIndex(null);
     setSelectedTrigram(id);
+  };
+
+  const jumpToMingpanTrigram = (id?: TrigramId) => {
+    setIsTimePlaying(false);
+    setActiveBranchIndex(null);
+    if (id) setSelectedTrigram(id);
     setActiveTab('mingpan');
   };
+
+  const activeBranch =
+    activeBranchIndex !== null ? EARTHLY_BRANCHES[activeBranchIndex] : null;
 
   return (
     <div className="app-shell">
@@ -59,35 +104,35 @@ export const App: React.FC = () => {
                 八卦基础命盘 · 阴阳五行科普图鉴
               </h1>
               <p className="brand-subtitle">
-                从“阴爻阳爻 → 先后天八卦 → 五行生克 → 十二地支时辰”读懂传统命盘底层坐标系
+                四步渐进式科普：基础入门 → 交互命盘实操 → 爻变与五行推演 → 对照总表
               </p>
             </div>
           </div>
 
-          <nav className="nav-tabs" aria-label="科普模块导航">
+          <nav className="nav-tabs" aria-label="科普学习路径">
+            <button
+              type="button"
+              className={`nav-tab ${activeTab === 'foundations' ? 'active' : ''}`}
+              onClick={() => setActiveTab('foundations')}
+            >
+              <GraduationCap size={15} />
+              1. 基础入门
+            </button>
             <button
               type="button"
               className={`nav-tab ${activeTab === 'mingpan' ? 'active' : ''}`}
               onClick={() => setActiveTab('mingpan')}
             >
               <Compass size={15} />
-              基础命盘示意
+              2. 交互命盘
             </button>
             <button
               type="button"
-              className={`nav-tab ${activeTab === 'yao-lab' ? 'active' : ''}`}
-              onClick={() => setActiveTab('yao-lab')}
+              className={`nav-tab ${activeTab === 'workshop' ? 'active' : ''}`}
+              onClick={() => setActiveTab('workshop')}
             >
               <GitBranch size={15} />
-              三爻生卦实验
-            </button>
-            <button
-              type="button"
-              className={`nav-tab ${activeTab === 'wuxing' ? 'active' : ''}`}
-              onClick={() => setActiveTab('wuxing')}
-            >
-              <Flame size={15} />
-              五行生克矩阵
+              3. 规律推演
             </button>
             <button
               type="button"
@@ -95,7 +140,7 @@ export const App: React.FC = () => {
               onClick={() => setActiveTab('glossary')}
             >
               <BookOpen size={15} />
-              对照表与边界
+              4. 总表与边界
             </button>
           </nav>
 
@@ -119,21 +164,31 @@ export const App: React.FC = () => {
         {/* Educational Context Strip */}
         <div className="primer-banner">
           <div className="primer-banner-text">
-            <span className="primer-pill">Step 1 · 基础盘式认知</span>
+            <span className="primer-pill">
+              {activeTab === 'foundations' && '第 1 站 · 零基础入门'}
+              {activeTab === 'mingpan' && '第 2 站 · 命盘全景实操'}
+              {activeTab === 'workshop' && '第 3 站 · 底层数理推演'}
+              {activeTab === 'glossary' && '第 4 站 · 体系边界与索引'}
+            </span>
             <span>
+              {activeTab === 'foundations' &&
+                '先用四节互动微课建立直觉：阴阳消长、洛书九宫（和为15）、八卦口诀与“坐北朝南”读盘规则。'}
               {activeTab === 'mingpan' &&
-                '点击盘面任意卦位，可联动查看该卦的“爻画结构（初爻向心）、先/后天方位差异、对应时辰与五行生克关系”。'}
-              {activeTab === 'yao-lab' &&
-                '八卦并非死记硬背的符号，而是由“阴爻(- -)与阳爻(—)”自下而上三次叠加的二进制自然模型。'}
-              {activeTab === 'wuxing' &&
-                '如果说八卦搭建了空间的八个方位坐标，五行（木火土金水）则是驱动盘面能量循环的生克动力规则。'}
+                '试着切换“先天 ↔ 后天”观看八宫平滑移位动画，或开启“十二时辰流转演示”观察日辰如何沿盘行进。'}
+              {activeTab === 'workshop' &&
+                '动手翻动三根爻画观察二进制生卦，并在动态粒子流中理解五行相生相克的能量循环。'}
               {activeTab === 'glossary' &&
-                '整理中英文标准译名、八宫对应全表，以及“科普符号认知”与“专业术数推演”的知识边界说明。'}
+                '完整中英文对照检索表，以及“通用命盘科普”与“专业术数推演”的知识边界声明。'}
             </span>
           </div>
         </div>
 
-        {/* View 1: Interactive Mingpan Explorer */}
+        {/* View 1: Foundations Primer */}
+        {activeTab === 'foundations' && (
+          <FoundationsPrimer onGoToMingpan={jumpToMingpanTrigram} />
+        )}
+
+        {/* View 2: Interactive Mingpan Explorer */}
         {activeTab === 'mingpan' && (
           <div className="explorer-grid">
             <section className="panel-card chart-stage">
@@ -154,7 +209,11 @@ export const App: React.FC = () => {
                     className={`segmented-btn ${
                       arrangement === 'xiantian' ? 'active' : ''
                     }`}
-                    onClick={() => setArrangement('xiantian')}
+                    onClick={() => {
+                      setIsTimePlaying(false);
+                      setActiveBranchIndex(null);
+                      setArrangement('xiantian');
+                    }}
                   >
                     先天八卦（伏羲 · 对待）
                   </button>
@@ -183,7 +242,7 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Layer Toggles */}
+              {/* Layer Toggles & Time Tour */}
               <div className="layer-toggles">
                 <span
                   style={{
@@ -194,14 +253,22 @@ export const App: React.FC = () => {
                     gap: 4,
                   }}
                 >
-                  <Layers size={13} /> 盘层叠加：
+                  <Layers size={13} /> 盘层与演示：
                 </span>
+                <button
+                  type="button"
+                  className={`chip-toggle ${isTimePlaying ? 'active' : ''}`}
+                  onClick={toggleTimeTour}
+                >
+                  {isTimePlaying ? <Pause size={13} /> : <Play size={13} />}
+                  {isTimePlaying ? '暂停时辰流转' : '十二时辰流转演示'}
+                </button>
                 <button
                   type="button"
                   className={`chip-toggle ${showBranches ? 'active' : ''}`}
                   onClick={() => setShowBranches((v) => !v)}
                 >
-                  十二地支时辰外环
+                  十二地支外环
                 </button>
                 <button
                   type="button"
@@ -216,10 +283,22 @@ export const App: React.FC = () => {
                   onClick={() => setShowOrderPath((v) => !v)}
                 >
                   {arrangement === 'xiantian'
-                    ? '先天S线与四组对宫'
-                    : '后天顺时针四季流转'}
+                    ? '先天S线与对宫'
+                    : '后天四季流转'}
                 </button>
               </div>
+
+              {activeBranch && (
+                <div className="time-tour-banner">
+                  <span>
+                    正在演示十二时辰顺流：<strong>{activeBranch.name}时</strong>（
+                    {activeBranch.hourLabel} · {activeBranch.timeRange}）
+                  </span>
+                  <span style={{ color: 'var(--accent-gold)' }}>
+                    归属后天宫位：{TRIGRAM_LIST.find((t) => t.id === activeBranch.trigramId)?.name}卦
+                  </span>
+                </div>
+              )}
 
               {/* Interactive SVG Wheel */}
               <div className="wheel-wrapper">
@@ -227,10 +306,11 @@ export const App: React.FC = () => {
                   arrangement={arrangement}
                   orientation={orientation}
                   selectedId={selectedTrigram}
-                  onSelectTrigram={setSelectedTrigram}
+                  onSelectTrigram={handleManualSelectTrigram}
                   showBranches={showBranches}
                   showRelations={showRelations}
                   showOrderPath={showOrderPath}
+                  activeBranchIndex={activeBranchIndex}
                 />
               </div>
 
@@ -245,7 +325,7 @@ export const App: React.FC = () => {
                       className={`quick-tri-btn ${
                         selectedTrigram === t.id ? 'active' : ''
                       }`}
-                      onClick={() => setSelectedTrigram(t.id)}
+                      onClick={() => handleManualSelectTrigram(t.id)}
                     >
                       <span style={{ fontSize: '1.25rem', color: el.color }}>
                         {t.symbol}
@@ -268,36 +348,31 @@ export const App: React.FC = () => {
               <div className="wheel-caption-bar">
                 <span>
                   {arrangement === 'houtian'
-                    ? '当前为【后天八卦】：帝出乎震(东) → 相见乎离(南) → 说言乎兑(西) → 劳乎坎(北)，呈“木→火→土→金→水”四季顺生秩序，是传统命盘（如奇门、风水罗盘、节气）的通用地盘底图。'
-                    : '当前为【先天八卦】：乾南坤北“天地定位”，离东坎西“水火不相射”，按 1乾→8坤 呈对称S形分布，揭示宇宙阴阳对待的静态本源结构。'}
+                    ? '【后天八卦】按“帝出乎震 → 相见乎离 → 说言乎兑 → 劳乎坎”顺时针推进，将空间方位与春夏秋冬四季、十二时辰融为一体。'
+                    : '【先天八卦】乾南坤北“天地定位”，离东坎西“水火不相射”，按 1乾→8坤 对称分布，揭示宇宙阴阳对待的静态本源。'}
                 </span>
                 <span className="font-mono-code" style={{ opacity: 0.85 }}>
                   {orientation === 'south-up'
-                    ? '朝向：上南下北 左东右西'
-                    : '朝向：上北下南 左西右东'}
+                    ? '上南下北 左东右西'
+                    : '上北下南 左西右东'}
                 </span>
               </div>
             </section>
 
-            {/* Right: Contextual Trigram Inspector */}
+            {/* Right: Focused Tabbed Trigram Inspector */}
             <aside>
               <TrigramInspector
                 trigramId={selectedTrigram}
                 arrangement={arrangement}
-                onSelectTrigram={setSelectedTrigram}
+                onSelectTrigram={handleManualSelectTrigram}
               />
             </aside>
           </div>
         )}
 
-        {/* View 2: Yao Lab */}
-        {activeTab === 'yao-lab' && (
-          <YaoLab onJumpToMingpan={jumpToMingpanTrigram} />
-        )}
-
-        {/* View 3: WuXing Matrix */}
-        {activeTab === 'wuxing' && (
-          <WuXingMatrix onJumpToTrigram={jumpToMingpanTrigram} />
+        {/* View 3: Workshop Hub (Yao Lab + WuXing Matrix) */}
+        {activeTab === 'workshop' && (
+          <WorkshopHub onJumpToMingpan={jumpToMingpanTrigram} />
         )}
 
         {/* View 4: Glossary & Scope */}
@@ -308,10 +383,10 @@ export const App: React.FC = () => {
 
       <footer className="footer-note">
         <span>
-          八卦与五行基础命盘科普示意 · Step 1（模块化数据结构，支持后续扩展六十四卦、历法干支或个人排盘层）
+          八卦与五行基础命盘科普示意 · Step 2（渐进式四步教学布局 + JS 实时动态演示）
         </span>
         <span>
-          知识参考溯源已整理于「对照表与边界」及项目{' '}
+          参考资料索引详见「4. 总表与边界」及{' '}
           <span className="font-mono-code">refer.md</span>
         </span>
       </footer>

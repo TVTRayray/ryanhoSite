@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrangementMode,
   EARTHLY_BRANCHES,
@@ -18,6 +18,7 @@ interface MingpanWheelProps {
   showBranches: boolean;
   showRelations: boolean;
   showOrderPath: boolean;
+  activeBranchIndex: number | null;
 }
 
 function polar(deg: number, radius: number): { x: number; y: number } {
@@ -48,6 +49,31 @@ function sectorPath(
   ].join(' ');
 }
 
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function shortestAngleLerp(from: number, to: number, t: number): number {
+  const diff = ((((to - from) % 360) + 540) % 360) - 180;
+  return (from + diff * t + 360) % 360;
+}
+
+function computeTargetAngles(
+  arrangement: ArrangementMode,
+  orientation: OrientationMode
+): Record<TrigramId, number> {
+  const offset = orientation === 'south-up' ? 0 : 180;
+  const result = {} as Record<TrigramId, number>;
+  for (const t of TRIGRAM_LIST) {
+    const base =
+      arrangement === 'xiantian'
+        ? t.xiantian.angleSouthUp
+        : t.houtian.angleSouthUp;
+    result[t.id] = (base + offset) % 360;
+  }
+  return result;
+}
+
 function getCardinalLabels(orientation: OrientationMode) {
   const offset = orientation === 'south-up' ? 0 : 180;
   return [
@@ -70,21 +96,51 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
   showBranches,
   showRelations,
   showOrderPath,
+  activeBranchIndex,
 }) => {
   const offset = orientation === 'south-up' ? 0 : 180;
+
+  // JS requestAnimationFrame smooth angular morph when switching 先天↔后天 or 上南↔上北
+  const [angles, setAngles] = useState<Record<TrigramId, number>>(() =>
+    computeTargetAngles(arrangement, orientation)
+  );
+  const currentAnglesRef = useRef<Record<TrigramId, number>>(angles);
+
+  useEffect(() => {
+    const startAngles = { ...currentAnglesRef.current };
+    const targetAngles = computeTargetAngles(arrangement, orientation);
+    const startTime = performance.now();
+    const duration = 680;
+    let rafId = 0;
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const eased = easeOutCubic(progress);
+
+      const next = {} as Record<TrigramId, number>;
+      for (const t of TRIGRAM_LIST) {
+        next[t.id] = shortestAngleLerp(
+          startAngles[t.id],
+          targetAngles[t.id],
+          eased
+        );
+      }
+      currentAnglesRef.current = next;
+      setAngles(next);
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(animate);
+      }
+    };
+
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
+  }, [arrangement, orientation]);
+
   const selectedTrigram = TRIGRAMS[selectedId];
   const selectedEl = ELEMENTS[selectedTrigram.element];
 
-  const getAngle = (tId: TrigramId): number => {
-    const t = TRIGRAMS[tId];
-    const base =
-      arrangement === 'xiantian'
-        ? t.xiantian.angleSouthUp
-        : t.houtian.angleSouthUp;
-    return (base + offset) % 360;
-  };
-
-  // 先天八卦 S 线（1乾 -> 2兑 -> 3离 -> 4震 -> 5巽 -> 6坎 -> 7艮 -> 8坤）
   const xiantianOrder: TrigramId[] = [
     'qian',
     'dui',
@@ -96,7 +152,6 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
     'kun',
   ];
 
-  // 后天八卦四季流转顺时针（震 -> 巽 -> 离 -> 坤 -> 兑 -> 乾 -> 坎 -> 艮）
   const houtianCycle: TrigramId[] = [
     'zhen',
     'xun',
@@ -111,13 +166,28 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
   const orderSequence =
     arrangement === 'xiantian' ? xiantianOrder : houtianCycle;
 
-  const pathPoints = orderSequence.map((id) => polar(getAngle(id), 124));
+  const pathPoints = orderSequence.map((id) => polar(angles[id], 124));
   const orderPolyline =
     arrangement === 'xiantian'
-      ? pathPoints.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
-      : pathPoints.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ') + ' Z';
+      ? pathPoints
+          .map(
+            (p, idx) =>
+              `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
+          )
+          .join(' ')
+      : pathPoints
+          .map(
+            (p, idx) =>
+              `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
+          )
+          .join(' ') + ' Z';
 
   const cardinalLabels = getCardinalLabels(orientation);
+
+  const sweepDeg =
+    activeBranchIndex !== null
+      ? (EARTHLY_BRANCHES[activeBranchIndex].angleSouthUp + offset) % 360
+      : null;
 
   return (
     <svg
@@ -167,7 +237,6 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
         </marker>
       </defs>
 
-      {/* Ambient core glow */}
       <circle cx="0" cy="0" r="245" fill="url(#coreGlow)" />
 
       {/* Outer astrolabe bezel ticks */}
@@ -233,9 +302,9 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
         );
       })}
 
-      {/* Optional 12 Earthly Branches Ring (r = 250 .. 296) */}
+      {/* Optional 12 Earthly Branches Ring */}
       {showBranches && (
-        <g opacity={arrangement === 'xiantian' ? 0.52 : 1}>
+        <g opacity={arrangement === 'xiantian' ? 0.45 : 1}>
           <circle
             cx="0"
             cy="0"
@@ -244,9 +313,10 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
             stroke="var(--ring-divider)"
             strokeWidth="1"
           />
-          {EARTHLY_BRANCHES.map((b) => {
+          {EARTHLY_BRANCHES.map((b, idx) => {
             const deg = (b.angleSouthUp + offset) % 360;
             const dPath = sectorPath(deg - 15, deg + 15, 250, 296);
+            const isActiveBranch = activeBranchIndex === idx;
             const isLinkedToSelected = b.trigramId === selectedId;
             const elColor = ELEMENTS[b.element].color;
             const posMain = polar(deg, 279);
@@ -260,12 +330,18 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
                 <path
                   d={dPath}
                   fill={
-                    isLinkedToSelected
+                    isActiveBranch
+                      ? 'var(--accent-vermilion-soft)'
+                      : isLinkedToSelected
                       ? 'var(--sector-active)'
                       : 'transparent'
                   }
-                  stroke="var(--ring-divider)"
-                  strokeWidth="0.7"
+                  stroke={
+                    isActiveBranch
+                      ? 'var(--accent-vermilion)'
+                      : 'var(--ring-divider)'
+                  }
+                  strokeWidth={isActiveBranch ? '1.6' : '0.7'}
                 />
                 <text
                   x={posMain.x}
@@ -273,12 +349,14 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
                   textAnchor="middle"
                   dominantBaseline="central"
                   fill={
-                    isLinkedToSelected
+                    isActiveBranch
+                      ? 'var(--accent-vermilion)'
+                      : isLinkedToSelected
                       ? 'var(--accent-gold)'
                       : 'var(--text-primary)'
                   }
                   fontSize="13"
-                  fontWeight={isLinkedToSelected ? '700' : '500'}
+                  fontWeight={isLinkedToSelected || isActiveBranch ? '700' : '500'}
                   className="font-serif-classical"
                 >
                   {b.name}
@@ -300,7 +378,7 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
         </g>
       )}
 
-      {/* Main Bagua Trigram Sectors (r = 148 .. 246) */}
+      {/* Main Bagua Trigram Sectors (animated angles!) */}
       <g>
         <circle
           cx="0"
@@ -328,13 +406,12 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
         />
 
         {TRIGRAM_LIST.map((t) => {
-          const deg = getAngle(t.id);
+          const deg = angles[t.id];
           const isSelected = t.id === selectedId;
           const el = ELEMENTS[t.element];
           const outerPath = sectorPath(deg - 22.5, deg + 22.5, 148, 246);
           const innerElementPath = sectorPath(deg - 22.5, deg + 22.5, 102, 148);
 
-          // Relation badge relative to selected trigram
           let relationTag: { label: string; color: string } | null = null;
           if (!isSelected && showRelations) {
             if (t.element === selectedTrigram.element) {
@@ -363,24 +440,18 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
               onClick={() => onSelectTrigram(t.id)}
               style={{ cursor: 'pointer' }}
             >
-              {/* Bagua sector */}
               <path
                 d={outerPath}
                 fill={
-                  isSelected
-                    ? 'var(--sector-active)'
-                    : 'var(--bg-surface)'
+                  isSelected ? 'var(--sector-active)' : 'var(--bg-surface)'
                 }
-                fillOpacity={isSelected ? 1 : 0.72}
+                fillOpacity={isSelected ? 1 : 0.76}
                 stroke={
-                  isSelected
-                    ? 'var(--accent-gold)'
-                    : 'var(--ring-divider)'
+                  isSelected ? 'var(--accent-gold)' : 'var(--ring-divider)'
                 }
                 strokeWidth={isSelected ? '1.8' : '0.9'}
               />
 
-              {/* Element inner sector */}
               <path
                 d={innerElementPath}
                 fill={el.softBg}
@@ -389,7 +460,6 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
                 strokeWidth="0.8"
               />
 
-              {/* Trigram Name + Number (always upright) */}
               <g transform={`translate(${titlePos.x}, ${titlePos.y})`}>
                 <text
                   textAnchor="middle"
@@ -421,7 +491,6 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
                 </text>
               </g>
 
-              {/* Three Yao Lines oriented strictly: 初爻向心 (r=162), 二爻 (r=176), 上爻向外 (r=190) */}
               <g transform={`rotate(${deg})`}>
                 {t.yaos.map((bit, idx) => {
                   const rY = -(162 + idx * 14);
@@ -466,7 +535,6 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
                 })}
               </g>
 
-              {/* Element & relation inside inner ring */}
               <g transform={`translate(${elPos.x}, ${elPos.y})`}>
                 <text
                   textAnchor="middle"
@@ -497,7 +565,7 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
         })}
       </g>
 
-      {/* Optional Order Path (先天S线 / 后天顺行线) */}
+      {/* Optional Order Path */}
       {showOrderPath && (
         <g pointerEvents="none">
           <path
@@ -506,13 +574,13 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
             stroke="var(--accent-gold)"
             strokeWidth="1.8"
             strokeDasharray="5 4"
-            strokeOpacity="0.8"
+            strokeOpacity="0.82"
             markerEnd="url(#arrowGold)"
           />
           {arrangement === 'xiantian' &&
             XIANTIAN_PAIRS.map((pair) => {
-              const pA = polar(getAngle(pair.a), 94);
-              const pB = polar(getAngle(pair.b), 94);
+              const pA = polar(angles[pair.a], 94);
+              const pB = polar(angles[pair.b], 94);
               const activePair =
                 pair.a === selectedId || pair.b === selectedId;
               return (
@@ -533,15 +601,15 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
         </g>
       )}
 
-      {/* Optional WuXing Relation Arcs inside center field (r = 70 .. 100) */}
+      {/* Optional WuXing Relation Arcs */}
       {showRelations && (
         <g pointerEvents="none">
           {TRIGRAM_LIST.filter((t) => t.id !== selectedId).map((target) => {
             const isGen = selectedEl.generates === target.element;
             const isOver = selectedEl.overcomes === target.element;
             if (!isGen && !isOver) return null;
-            const pFrom = polar(getAngle(selectedId), 96);
-            const pTo = polar(getAngle(target.id), 96);
+            const pFrom = polar(angles[selectedId], 96);
+            const pTo = polar(angles[target.id], 96);
             return (
               <path
                 key={target.id}
@@ -557,7 +625,29 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
         </g>
       )}
 
-      {/* Center Taiji & LuoShu Five Core (r = 0 .. 66) */}
+      {/* Active Earthly Branch Sweep Pointer during 时辰流转演示 */}
+      {sweepDeg !== null && (
+        <g pointerEvents="none">
+          {(() => {
+            const pInner = polar(sweepDeg, 66);
+            const pOuter = polar(sweepDeg, 294);
+            return (
+              <line
+                x1={pInner.x}
+                y1={pInner.y}
+                x2={pOuter.x}
+                y2={pOuter.y}
+                stroke="var(--accent-vermilion)"
+                strokeWidth="2.2"
+                strokeDasharray="4 3"
+                strokeOpacity="0.9"
+              />
+            );
+          })()}
+        </g>
+      )}
+
+      {/* Center Taiji & LuoShu Five Core */}
       <g>
         <circle
           cx="0"
@@ -576,7 +666,6 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
           strokeWidth="0.9"
           strokeDasharray="2 3"
         />
-        {/* Crisp Geometric Taiji Emblem */}
         <g transform="scale(0.42)">
           <circle
             cx="0"

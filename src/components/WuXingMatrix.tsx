@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowRight, Pause, Play } from 'lucide-react';
 import {
   ELEMENT_ORDER,
   ELEMENTS,
@@ -12,7 +12,6 @@ interface WuXingMatrixProps {
   onJumpToTrigram: (id: TrigramId) => void;
 }
 
-// 五行圆周角度：木(左上/东) -> 火(正上/南) -> 土(右上/中枢) -> 金(右下/西) -> 水(左下/北)
 const NODE_POSITIONS: Record<ElementId, { x: number; y: number }> = {
   fire: { x: 200, y: 52 },
   earth: { x: 342, y: 155 },
@@ -25,28 +24,78 @@ export const WuXingMatrix: React.FC<WuXingMatrixProps> = ({
   onJumpToTrigram,
 }) => {
   const [selectedEl, setSelectedEl] = useState<ElementId>('wood');
+  const [flowEnabled, setFlowEnabled] = useState(true);
+  const [pulsePhase, setPulsePhase] = useState(0); // 0..1
+
+  // JS requestAnimationFrame energy flow along generates/overcomes edges
+  useEffect(() => {
+    if (!flowEnabled) return;
+    let rafId = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      setPulsePhase(((now - start) % 2400) / 2400);
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [flowEnabled]);
+
   const current = ELEMENTS[selectedEl];
+
+  const getEdgeSegment = (fromId: ElementId, toId: ElementId) => {
+    const from = NODE_POSITIONS[fromId];
+    const to = NODE_POSITIONS[toId];
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.hypot(dx, dy);
+    const pad = 34;
+    return {
+      x1: from.x + (dx / len) * pad,
+      y1: from.y + (dy / len) * pad,
+      x2: to.x - (dx / len) * pad,
+      y2: to.y - (dy / len) * pad,
+    };
+  };
 
   return (
     <div className="wuxing-grid">
-      {/* Left: Interactive Pentagram SVG */}
+      {/* Left: Interactive Pentagram SVG with animated flow particles */}
       <div className="panel-card lab-card">
-        <div>
-          <span className="primer-pill">五行相生相克 · 动力模型</span>
-          <h2
-            className="font-serif-classical"
-            style={{ margin: '10px 0 6px', fontSize: '1.35rem' }}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 10,
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <span className="primer-pill">五行相生相克 · 动态流转</span>
+            <h2
+              className="font-serif-classical"
+              style={{ margin: '10px 0 6px', fontSize: '1.35rem' }}
+            >
+              外环相生 · 内星相克能量流
+            </h2>
+          </div>
+          <button
+            type="button"
+            className={`chip-toggle ${flowEnabled ? 'active' : ''}`}
+            onClick={() => setFlowEnabled((v) => !v)}
           >
-            外环相生 · 内星相克交互图谱
-          </h2>
-          <p className="section-body">
-            “生”代表滋养推动（顺时针外圈），“克”代表制约平衡（五角星内线）。命盘看重的是<strong>生克制化的动态平衡</strong>，而非单看某一行多少。
-          </p>
+            {flowEnabled ? <Pause size={13} /> : <Play size={13} />}
+            {flowEnabled ? '暂停能量流' : '开启能量流'}
+          </button>
         </div>
+
+        <p className="section-body">
+          点击任意五行圆环，“绿实线”表示滋养相生，“红虚线”表示制约相克，光点代表能量流向：
+        </p>
 
         <svg
           viewBox="0 0 400 385"
-          style={{ width: '100%', maxWidth: 440, margin: '0 auto' }}
+          style={{ width: '100%', maxWidth: 430, margin: '0 auto' }}
           role="img"
           aria-label="五行相生相克五角星图"
         >
@@ -84,62 +133,56 @@ export const WuXingMatrix: React.FC<WuXingMatrixProps> = ({
             strokeDasharray="4 4"
           />
 
-          {/* 相生外环（实线绿） */}
+          {/* 相生外环 */}
           {ELEMENT_ORDER.map((id) => {
-            const from = NODE_POSITIONS[id];
             const targetId = ELEMENTS[id].generates;
-            const to = NODE_POSITIONS[targetId];
-            const dx = to.x - from.x;
-            const dy = to.y - from.y;
-            const len = Math.hypot(dx, dy);
-            const pad = 34;
-            const x1 = from.x + (dx / len) * pad;
-            const y1 = from.y + (dy / len) * pad;
-            const x2 = to.x - (dx / len) * pad;
-            const y2 = to.y - (dy / len) * pad;
+            const seg = getEdgeSegment(id, targetId);
             const highlight = id === selectedEl || targetId === selectedEl;
+            const px = seg.x1 + (seg.x2 - seg.x1) * pulsePhase;
+            const py = seg.y1 + (seg.y2 - seg.y1) * pulsePhase;
             return (
-              <line
-                key={`s-${id}`}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="#4E9F76"
-                strokeWidth={highlight ? '2.4' : '1.2'}
-                strokeOpacity={highlight ? 0.95 : 0.35}
-                markerEnd="url(#wxSheng)"
-              />
+              <g key={`s-${id}`}>
+                <line
+                  x1={seg.x1}
+                  y1={seg.y1}
+                  x2={seg.x2}
+                  y2={seg.y2}
+                  stroke="#4E9F76"
+                  strokeWidth={highlight ? '2.4' : '1.2'}
+                  strokeOpacity={highlight ? 0.95 : 0.32}
+                  markerEnd="url(#wxSheng)"
+                />
+                {flowEnabled && highlight && (
+                  <circle cx={px} cy={py} r="4.2" fill="#68C896" />
+                )}
+              </g>
             );
           })}
 
-          {/* 相克内星（虚线朱红） */}
+          {/* 相克内星 */}
           {ELEMENT_ORDER.map((id) => {
-            const from = NODE_POSITIONS[id];
             const targetId = ELEMENTS[id].overcomes;
-            const to = NODE_POSITIONS[targetId];
-            const dx = to.x - from.x;
-            const dy = to.y - from.y;
-            const len = Math.hypot(dx, dy);
-            const pad = 34;
-            const x1 = from.x + (dx / len) * pad;
-            const y1 = from.y + (dy / len) * pad;
-            const x2 = to.x - (dx / len) * pad;
-            const y2 = to.y - (dy / len) * pad;
+            const seg = getEdgeSegment(id, targetId);
             const highlight = id === selectedEl || targetId === selectedEl;
+            const px = seg.x1 + (seg.x2 - seg.x1) * pulsePhase;
+            const py = seg.y1 + (seg.y2 - seg.y1) * pulsePhase;
             return (
-              <line
-                key={`k-${id}`}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="#D4573B"
-                strokeWidth={highlight ? '2.1' : '1.1'}
-                strokeDasharray="5 4"
-                strokeOpacity={highlight ? 0.9 : 0.32}
-                markerEnd="url(#wxKe)"
-              />
+              <g key={`k-${id}`}>
+                <line
+                  x1={seg.x1}
+                  y1={seg.y1}
+                  x2={seg.x2}
+                  y2={seg.y2}
+                  stroke="#D4573B"
+                  strokeWidth={highlight ? '2.1' : '1.1'}
+                  strokeDasharray="5 4"
+                  strokeOpacity={highlight ? 0.9 : 0.3}
+                  markerEnd="url(#wxKe)"
+                />
+                {flowEnabled && highlight && (
+                  <circle cx={px} cy={py} r="3.6" fill="#EB6B4D" />
+                )}
+              </g>
             );
           })}
 
@@ -156,12 +199,12 @@ export const WuXingMatrix: React.FC<WuXingMatrixProps> = ({
                 style={{ cursor: 'pointer' }}
               >
                 <circle
-                  r={isSelected ? 33 : 29}
+                  r={isSelected ? 34 : 29}
                   fill="var(--bg-surface)"
                   stroke={el.color}
                   strokeWidth={isSelected ? '3' : '1.6'}
                 />
-                <circle r={isSelected ? 29 : 25} fill={el.softBg} />
+                <circle r={isSelected ? 30 : 25} fill={el.softBg} />
                 <text
                   y="-3"
                   textAnchor="middle"

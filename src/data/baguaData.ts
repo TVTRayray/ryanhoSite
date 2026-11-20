@@ -44,6 +44,7 @@ export interface TrigramInfo {
   symbol: string;
   yaos: [YaoBit, YaoBit, YaoBit]; // [初爻(内/下), 二爻(中), 上爻(外/上)]
   mnemonic: string;
+  mnemonicExplain: string;
   nature: string;
   natureEn: string;
   element: ElementId;
@@ -53,7 +54,7 @@ export interface TrigramInfo {
     number: number;
     direction: string;
     directionEn: string;
-    angleSouthUp: number; // 0 = Top (South), 90 = Right (West), 180 = Bottom (North), 270 = Left (East)
+    angleSouthUp: number;
   };
   houtian: {
     luoshuNumber: number;
@@ -156,8 +157,8 @@ export const ELEMENTS: Record<ElementId, ElementInfo> = {
     name: '金',
     pinyin: 'Jīn',
     english: 'Metal',
-    color: '#B8C4D4',
-    softBg: 'rgba(184, 196, 212, 0.15)',
+    color: '#9BAEC4',
+    softBg: 'rgba(155, 174, 196, 0.16)',
     traditionalColor: '白 · 素银',
     direction: '西方',
     season: '秋季',
@@ -216,6 +217,7 @@ export const TRIGRAMS: Record<TrigramId, TrigramInfo> = {
     symbol: '☰',
     yaos: [1, 1, 1],
     mnemonic: '乾三连',
+    mnemonicExplain: '三条实线连贯无断，象征纯阳饱满之天。',
     nature: '天',
     natureEn: 'Heaven',
     element: 'metal',
@@ -252,6 +254,7 @@ export const TRIGRAMS: Record<TrigramId, TrigramInfo> = {
     symbol: '☱',
     yaos: [1, 1, 0],
     mnemonic: '兑上缺',
+    mnemonicExplain: '下面两爻实、最上面一爻断开，像池泽上方开口蓄水。',
     nature: '泽',
     natureEn: 'Lake / Marsh',
     element: 'metal',
@@ -288,6 +291,7 @@ export const TRIGRAMS: Record<TrigramId, TrigramInfo> = {
     symbol: '☲',
     yaos: [1, 0, 1],
     mnemonic: '离中虚',
+    mnemonicExplain: '上下两条阳爻实、中间一爻断开，象征火苗外明而中心空虚。',
     nature: '火',
     natureEn: 'Fire / Sun',
     element: 'fire',
@@ -324,6 +328,7 @@ export const TRIGRAMS: Record<TrigramId, TrigramInfo> = {
     symbol: '☳',
     yaos: [1, 0, 0],
     mnemonic: '震仰盂',
+    mnemonicExplain: '底下一爻为实线、上面两爻断开，形状像口朝上的盆盂。',
     nature: '雷',
     natureEn: 'Thunder',
     element: 'wood',
@@ -360,6 +365,7 @@ export const TRIGRAMS: Record<TrigramId, TrigramInfo> = {
     symbol: '☴',
     yaos: [0, 1, 1],
     mnemonic: '巽下断',
+    mnemonicExplain: '上面两爻实、最下面初爻断开，像风自地面缝隙钻入吹拂。',
     nature: '风',
     natureEn: 'Wind / Wood',
     element: 'wood',
@@ -396,6 +402,7 @@ export const TRIGRAMS: Record<TrigramId, TrigramInfo> = {
     symbol: '☵',
     yaos: [0, 1, 0],
     mnemonic: '坎中满',
+    mnemonicExplain: '上下两爻断开、中间一爻实线饱满，象征两岸夹水、内含阳劲。',
     nature: '水',
     natureEn: 'Water / Moon',
     element: 'water',
@@ -432,6 +439,7 @@ export const TRIGRAMS: Record<TrigramId, TrigramInfo> = {
     symbol: '☶',
     yaos: [0, 0, 1],
     mnemonic: '艮覆碗',
+    mnemonicExplain: '下面两爻断开、最上面一爻实线封顶，形状像倒扣过来的碗。',
     nature: '山',
     natureEn: 'Mountain',
     element: 'earth',
@@ -468,6 +476,7 @@ export const TRIGRAMS: Record<TrigramId, TrigramInfo> = {
     symbol: '☷',
     yaos: [0, 0, 0],
     mnemonic: '坤六断',
+    mnemonicExplain: '三条阴爻各断为两半，共成六段，象征疏松包容的大地。',
     nature: '地',
     natureEn: 'Earth',
     element: 'earth',
@@ -537,18 +546,106 @@ export const XIANTIAN_PAIRS: Array<{
   { title: '水火不相射', a: 'kan', b: 'li', meaning: '正西坎水与正东离火对列而互济不伤，如日月相推。' },
 ];
 
-export interface RelationCategory {
-  key: 'same' | 'generates' | 'generatedBy' | 'overcomes' | 'overcomeBy';
-  label: string;
-  shortDesc: string;
+export const YINYANG_PRINCIPLES = [
+  {
+    title: '对立制约',
+    en: 'Opposition',
+    example: '昼与夜、寒与暑、动与静',
+    desc: '万物皆具阴、阳两个侧面，彼此相互约束，不使单一方无限膨胀。',
+  },
+  {
+    title: '互根互用',
+    en: 'Interdependence',
+    example: '无昼不知夜，无水火难济',
+    desc: '阴以阳为存在前提，阳以阴为承载根基，“孤阴不生，独阳不长”。',
+  },
+  {
+    title: '消长平衡',
+    en: 'Waxing & Waning',
+    example: '冬至一阳生，夏至一阴生',
+    desc: '阴阳并非静止对半，而是处于此消彼长的动态波浪平衡之中。',
+  },
+  {
+    title: '相互转化',
+    en: 'Transformation',
+    example: '昼极入夜，寒极生暖',
+    desc: '“物极必反”：当阳或阴发展到顶点（如夏至、冬至），便向对立面转化。',
+  },
+];
+
+// 洛书九宫格（按传统“上南下北、左东右西”排列）
+export interface LuoShuCell {
+  num: number;
+  row: number;
+  col: number;
+  direction: string;
+  trigramId: TrigramId | null;
+  element: ElementId;
+  mnemonicPhrase: string;
 }
 
-export const ELEMENT_RELATIONS: RelationCategory[] = [
-  { key: 'same', label: '同气比和', shortDesc: '五行相同，气息共振' },
-  { key: 'generatedBy', label: '生我者（滋养源）', shortDesc: '为本卦提供能量与支撑' },
-  { key: 'generates', label: '我生者（输出向）', shortDesc: '由本卦孕育、向外显发' },
-  { key: 'overcomeBy', label: '克我者（制约规矩）', shortDesc: '对本卦形成约束与雕琢' },
-  { key: 'overcomes', label: '我克者（驾驭对象）', shortDesc: '本卦主动掌控、梳理的对象' },
+export const LUOSHU_CELLS: LuoShuCell[] = [
+  { num: 4, row: 0, col: 0, direction: '东南', trigramId: 'xun', element: 'wood', mnemonicPhrase: '四肩（巽风）' },
+  { num: 9, row: 0, col: 1, direction: '正南', trigramId: 'li', element: 'fire', mnemonicPhrase: '戴九（离火）' },
+  { num: 2, row: 0, col: 2, direction: '西南', trigramId: 'kun', element: 'earth', mnemonicPhrase: '二肩（坤地）' },
+  { num: 3, row: 1, col: 0, direction: '正东', trigramId: 'zhen', element: 'wood', mnemonicPhrase: '左三（震雷）' },
+  { num: 5, row: 1, col: 1, direction: '中央', trigramId: null, element: 'earth', mnemonicPhrase: '五居中（皇极土）' },
+  { num: 7, row: 1, col: 2, direction: '正西', trigramId: 'dui', element: 'metal', mnemonicPhrase: '右七（兑泽）' },
+  { num: 8, row: 2, col: 0, direction: '东北', trigramId: 'gen', element: 'earth', mnemonicPhrase: '八足（艮山）' },
+  { num: 1, row: 2, col: 1, direction: '正北', trigramId: 'kan', element: 'water', mnemonicPhrase: '履一（坎水）' },
+  { num: 6, row: 2, col: 2, direction: '西北', trigramId: 'qian', element: 'metal', mnemonicPhrase: '六足（乾天）' },
+];
+
+export const LUOSHU_LINES: Array<{ label: string; nums: [number, number, number] }> = [
+  { label: '上横（南）4 + 9 + 2 = 15', nums: [4, 9, 2] },
+  { label: '中横（东西）3 + 5 + 7 = 15', nums: [3, 5, 7] },
+  { label: '下横（北）8 + 1 + 6 = 15', nums: [8, 1, 6] },
+  { label: '左竖（东）4 + 3 + 8 = 15', nums: [4, 3, 8] },
+  { label: '中竖（子午）9 + 5 + 1 = 15', nums: [9, 5, 1] },
+  { label: '右竖（西）2 + 7 + 6 = 15', nums: [2, 7, 6] },
+  { label: '主斜线 4 + 5 + 6 = 15', nums: [4, 5, 6] },
+  { label: '副斜线 2 + 5 + 8 = 15', nums: [2, 5, 8] },
+];
+
+// 八卦父母六子（索卦法则）
+export const BAGUA_FAMILY = {
+  parents: [
+    { id: 'qian' as TrigramId, title: '乾 · 父', desc: '纯阳三连' },
+    { id: 'kun' as TrigramId, title: '坤 · 母', desc: '纯阴六断' },
+  ],
+  sons: [
+    { id: 'zhen' as TrigramId, title: '震 · 长男', rule: '坤母一索得乾初阳' },
+    { id: 'kan' as TrigramId, title: '坎 · 中男', rule: '坤母再索得乾中阳' },
+    { id: 'gen' as TrigramId, title: '艮 · 少男', rule: '坤母三索得乾上阳' },
+  ],
+  daughters: [
+    { id: 'xun' as TrigramId, title: '巽 · 长女', rule: '乾父一索得坤初阴' },
+    { id: 'li' as TrigramId, title: '离 · 中女', rule: '乾父再索得坤中阴' },
+    { id: 'dui' as TrigramId, title: '兑 · 少女', rule: '乾父三索得坤上阴' },
+  ],
+};
+
+export const MINGPAN_ANATOMY_STEPS = [
+  {
+    layer: 1,
+    name: '第一层 · 天池太极中宫',
+    desc: '命盘正中为太极与洛书“五皇极土”，代表一切变化尚未分化前的基准原点。',
+  },
+  {
+    layer: 2,
+    name: '第二层 · 五行生克内环',
+    desc: '木、火、土、金、水五种能量属性依附于八宫，决定盘内任意两宫之间是“生助”还是“制约”。',
+  },
+  {
+    layer: 3,
+    name: '第三层 · 八宫卦象主环',
+    desc: '八个三爻经卦按先天或后天方位排布，遵循“初爻向心、上爻向外”，标定空间八方。',
+  },
+  {
+    layer: 4,
+    name: '第四层 · 十二地支时辰外环',
+    desc: '子丑寅卯等十二地支将一天 24 小时与一年 12 月精确嵌入后天八卦，实现“时空合一”。',
+  },
 ];
 
 export function findTrigramByYaos(yaos: [YaoBit, YaoBit, YaoBit]): TrigramInfo {
@@ -614,9 +711,9 @@ export const REFERENCE_SOURCES: ReferenceItem[] = [
 export const SCOPE_DISTINCTIONS = [
   {
     title: '本页面（基础命盘科普层）',
-    badge: '当前阶段 Step 1',
+    badge: '当前阶段 Step 1–2',
     points: [
-      '聚焦阴阳两仪、三爻成卦、先天八卦（伏羲）与后天八卦（文王）的空间方位差异。',
+      '聚焦阴阳两仪、洛书九宫、三爻成卦、先天八卦（伏羲）与后天八卦（文王）的空间方位差异。',
       '解释“上南下北、左东右西”的古法观象视角，以及初爻向心、上爻向外的读盘规则。',
       '展示五行相生相克与十二地支时辰如何在同一基础命盘结构上相互咬合。',
     ],
