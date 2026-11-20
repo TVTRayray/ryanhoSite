@@ -1,0 +1,103 @@
+:root,
+[data-theme='ink'] {
+  --bg-canvas: #0b0e14;
+  --bg-surface: #121722;
+  --bg-elevated: #181f2e;
+  --bg-glass: rgba(18, 23, 34, 0.82);
+  --border-subtle: rgba(212, 175, 106, 0.18);
+  --border-strong: rgba(212, 175, 106, 0.42);
+  --text-primary: #f1eadb;
+  --text-secondary: #b7b0a0;
+  --text-muted: #7d786b;
+  --accent-gold: #d4af6a;
+  --accent-gold-dim: rgba(212, 175, 106, 0.16);
+  --accent-vermilion: #d1563b;
+  --accent-vermilion-soft: rgba(209, 86, 59, 0.16);
+  --accent-jade: #4e9f76;
+  --ring-track: rgba(212, 175, 106, 0.14);
+  --ring-divider: rgba(212, 175, 106, 0.22);
+  --sector-hover: rgba(212, 175, 106, 0.11);
+  --sector-active: rgba(212, 175, 106, 0.22);
+  --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.45);
+  --grid-dot: rgba(212, 175, 106, 0.08);
+  --taiji-yang: #f1eadb;
+  --taiji-yin: #141925;
+}
+
+[data-theme='paper'] {
+  --bg-canvas: #f4efe4;
+  --bg-surface: #fbf8f1;
+  --bg-elevated: #efe8d8;
+  --bg-glass: rgba(251, 248, 241, 0.88);
+  --border-subtle: rgba(112, 86, 46, 0.18);
+  --border-strong: rgba(145, 98, 36, 0.45);
+  --text-primary: #1f1b16;
+  --text-secondary: #534a3d;
+  --text-muted: #827664;
+  --accent-gold: #9a6c22;
+  --accent-gold-dim: rgba(154, 108, 34, 0.12);
+  --accent-vermilion: #b83b24;
+  --accent-vermilion-soft: rgba(184, 59, 36, 0.11);
+  --accent-jade: #2f7d58;
+  --ring-track: rgba(128, 95, 42, 0.12);
+  --ring-divider: rgba(128, 95, 42, 0.24);
+  --sector-hover: rgba(154, 108, 34, 0.1);
+  --sector-active: rgba(184, 59, 36, 0.14);
+  --shadow-card: 0 18px 42px rgba(45, 34, 18, 0.08);
+  --grid-dot: rgba(128, 95, 42, 0.08);
+  --taiji-yang: #fbf8f1;
+  --taiji-yin: #26211c;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px),
+    radial-gradient(
+      ellipse at 18% 0%,
+      var(--accent-gold-dim),
+      transparent 48%
+    );
+  background-size: 26px 26px, 100% 100%;
+  background-position: 0 0, 0 0;
+}
+
+.font-serif-classical {
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong',
+    serif;
+}
+
+.font-mono-code {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: var(--accent-gold);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
