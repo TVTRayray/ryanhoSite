@@ -19,6 +19,10 @@ ryanho.cc.cd 的源码:Astro 静态站,由同一台服务器上的 Caddy 提供�
 - 文章在 `src/content/posts/*.md`,frontmatter 由 `src/content.config.ts` 校验。
 - 站点颜色全部用 `src/styles/global.css` 里 `light-dark()` 定义的变量;主题切换靠 `<html data-theme>`。
 - `src/figures/*.html` 由 `npm run figures` 生成,不要手改。
+- `apps/bagua/` 是独立的 React + Vite 应用(八卦命盘图鉴),发布在 `/bagua/`。
+  `npm run build` 会在 Astro 之后把它构建进 `dist/bagua`(顺序不能反,Astro 会清空 `dist`)。
+  它的颜色变量在 `apps/bagua/src/styles/theme.css`,映射自站点配色;主题偏好与主站共用 localStorage `theme`。
+  它由 `git subtree` 并入,原始开发历史保留在仓库里。
 
 ## Development
 

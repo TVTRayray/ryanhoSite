@@ -1,53 +1,90 @@
-:root,
-[data-theme='ink'] {
-  --bg-canvas: #0b0e14;
-  --bg-surface: #121722;
-  --bg-elevated: #181f2e;
-  --bg-glass: rgba(18, 23, 34, 0.82);
-  --border-subtle: rgba(212, 175, 106, 0.18);
-  --border-strong: rgba(212, 175, 106, 0.42);
-  --text-primary: #f1eadb;
-  --text-secondary: #b7b0a0;
-  --text-muted: #7d786b;
-  --accent-gold: #d4af6a;
-  --accent-gold-dim: rgba(212, 175, 106, 0.16);
-  --accent-vermilion: #d1563b;
-  --accent-vermilion-soft: rgba(209, 86, 59, 0.16);
-  --accent-jade: #4e9f76;
-  --ring-track: rgba(212, 175, 106, 0.14);
-  --ring-divider: rgba(212, 175, 106, 0.22);
-  --sector-hover: rgba(212, 175, 106, 0.11);
-  --sector-active: rgba(212, 175, 106, 0.22);
-  --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.45);
-  --grid-dot: rgba(212, 175, 106, 0.08);
-  --taiji-yang: #f1eadb;
-  --taiji-yin: #141925;
+/*
+ * 与 ryanho.cc.cd 主站共用的视觉语言:纸面、墨色与陶橙(见站点 src/styles/global.css)。
+ * 所有颜色用 light-dark() 定义,改 color-scheme 即整体换肤:
+ *   <html data-theme="light|dark"> 为手动选择,缺省跟随系统。
+ * 主题偏好存在 localStorage 'theme',与主站同源共享。
+ */
+
+@font-face {
+  font-family: 'Site Poppins';
+  src: url('/fonts/poppins-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Site Poppins';
+  src: url('/fonts/poppins-600.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Site Lora';
+  src: url('/fonts/lora-var.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
 }
 
-[data-theme='paper'] {
-  --bg-canvas: #f4efe4;
-  --bg-surface: #fbf8f1;
-  --bg-elevated: #efe8d8;
-  --bg-glass: rgba(251, 248, 241, 0.88);
-  --border-subtle: rgba(112, 86, 46, 0.18);
-  --border-strong: rgba(145, 98, 36, 0.45);
-  --text-primary: #1f1b16;
-  --text-secondary: #534a3d;
-  --text-muted: #827664;
-  --accent-gold: #9a6c22;
-  --accent-gold-dim: rgba(154, 108, 34, 0.12);
-  --accent-vermilion: #b83b24;
-  --accent-vermilion-soft: rgba(184, 59, 36, 0.11);
-  --accent-jade: #2f7d58;
-  --ring-track: rgba(128, 95, 42, 0.12);
-  --ring-divider: rgba(128, 95, 42, 0.24);
-  --sector-hover: rgba(154, 108, 34, 0.1);
-  --sector-active: rgba(184, 59, 36, 0.14);
-  --shadow-card: 0 18px 42px rgba(45, 34, 18, 0.08);
-  --grid-dot: rgba(128, 95, 42, 0.08);
-  --taiji-yang: #fbf8f1;
-  --taiji-yin: #26211c;
+:root {
+  color-scheme: light dark;
+
+  /* 站点基础色 */
+  --canvas: light-dark(#faf9f5, #141413);
+  --sheet: light-dark(#fffefa, #1e1d1a);
+  --fill: light-dark(#f3f0e8, #282621);
+  --line: light-dark(#e8e6dc, #37342d);
+  --control: light-dark(#8e877a, #82796b);
+  --ink: light-dark(#141413, #faf9f5);
+  --clay: light-dark(#973f28, #f0a88e);
+  --clay-tint: light-dark(#f7e7dd, #3a2820);
+
+  /* 本应用原有的语义变量,映射到站点色 */
+  --bg-canvas: var(--canvas);
+  --bg-surface: var(--sheet);
+  --bg-elevated: var(--fill);
+  --bg-glass: color-mix(in srgb, var(--canvas) 86%, transparent);
+  --border-subtle: var(--line);
+  --border-strong: var(--control);
+  --text-primary: var(--ink);
+  --text-secondary: light-dark(#625e55, #b0aea5);
+  --text-muted: light-dark(#7a7367, #8f8a7f);
+  /* 界面强调色:原金色 → 站点陶橙 */
+  --accent-gold: var(--clay);
+  --accent-gold-dim: var(--clay-tint);
+  /* 朱红是语义色(选中宫位、对宫、相克),与火同源,不并入陶橙 */
+  --accent-vermilion: light-dark(#b83b24, #e0684b);
+  --accent-vermilion-soft: color-mix(in srgb, var(--accent-vermilion) 13%, transparent);
+  --accent-jade: var(--el-wood);
+  --ring-track: color-mix(in srgb, var(--ink) 6%, transparent);
+  --ring-divider: color-mix(in srgb, var(--ink) 15%, transparent);
+  --sector-hover: color-mix(in srgb, var(--clay) 8%, transparent);
+  --sector-active: color-mix(in srgb, var(--clay) 16%, transparent);
+  --shadow-card: none;
+  --taiji-yang: light-dark(#fffefa, #faf9f5);
+  --taiji-yin: light-dark(#26241f, #2c2a25);
+
+  /* 五行:色相不变,按明暗各取一档,保证在两种纸面上都看得清 */
+  --el-wood: light-dark(#2f7d58, #4e9f76);
+  --el-wood-bright: light-dark(#3d9a6d, #68c896);
+  --el-fire: light-dark(#b83b24, #d4573b);
+  --el-fire-bright: light-dark(#d1563b, #eb6b4d);
+  --el-earth: light-dark(#94691f, #c79b46);
+  --el-metal: light-dark(#5f7186, #9baec4);
+  --el-water: light-dark(#2f6a9e, #4e86b8);
+  --el-wood-soft: color-mix(in srgb, var(--el-wood) 14%, transparent);
+  --el-fire-soft: color-mix(in srgb, var(--el-fire) 14%, transparent);
+  --el-earth-soft: color-mix(in srgb, var(--el-earth) 16%, transparent);
+  --el-metal-soft: color-mix(in srgb, var(--el-metal) 16%, transparent);
+  --el-water-soft: color-mix(in srgb, var(--el-water) 16%, transparent);
+
+  --font-ui: 'Site Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+  --font-serif: 'Site Lora', 'Noto Serif SC', 'Noto Serif CJK SC', 'Source Han Serif SC',
+    'Songti SC', 'STSong', SimSun, serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', SFMono-Regular, Menlo, Consolas, monospace;
 }
+
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
 
 *,
 *::before,
@@ -62,30 +99,16 @@ body {
   min-height: 100%;
   background-color: var(--bg-canvas);
   color: var(--text-primary);
-  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC',
-    'Microsoft YaHei', sans-serif;
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body {
-  background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px),
-    radial-gradient(
-      ellipse at 18% 0%,
-      var(--accent-gold-dim),
-      transparent 48%
-    );
-  background-size: 26px 26px, 100% 100%;
-  background-position: 0 0, 0 0;
 }
 
 .font-serif-classical {
-  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong',
-    serif;
+  font-family: var(--font-serif);
 }
 
 .font-mono-code {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
 }
 
 button {
@@ -95,9 +118,20 @@ button {
 
 a {
   color: var(--accent-gold);
+  text-underline-offset: 0.18em;
   text-decoration: none;
 }
 
 a:hover {
   text-decoration: underline;
+}
+
+:is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--clay);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--clay-tint);
+  color: var(--ink);
 }

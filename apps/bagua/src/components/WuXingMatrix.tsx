@@ -109,7 +109,7 @@ export const WuXingMatrix: React.FC<WuXingMatrixProps> = ({
               markerHeight="6"
               orient="auto"
             >
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="#4E9F76" />
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--el-wood)" />
             </marker>
             <marker
               id="wxKe"
@@ -120,7 +120,7 @@ export const WuXingMatrix: React.FC<WuXingMatrixProps> = ({
               markerHeight="5.5"
               orient="auto"
             >
-              <path d="M 0 1 L 10 5 L 0 9 z" fill="#D4573B" />
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--el-fire)" />
             </marker>
           </defs>
 
@@ -147,13 +147,13 @@ export const WuXingMatrix: React.FC<WuXingMatrixProps> = ({
                   y1={seg.y1}
                   x2={seg.x2}
                   y2={seg.y2}
-                  stroke="#4E9F76"
+                  stroke="var(--el-wood)"
                   strokeWidth={highlight ? '2.4' : '1.2'}
                   strokeOpacity={highlight ? 0.95 : 0.32}
                   markerEnd="url(#wxSheng)"
                 />
                 {flowEnabled && highlight && (
-                  <circle cx={px} cy={py} r="4.2" fill="#68C896" />
+                  <circle cx={px} cy={py} r="4.2" fill="var(--el-wood-bright)" />
                 )}
               </g>
             );
@@ -173,14 +173,14 @@ export const WuXingMatrix: React.FC<WuXingMatrixProps> = ({
                   y1={seg.y1}
                   x2={seg.x2}
                   y2={seg.y2}
-                  stroke="#D4573B"
+                  stroke="var(--el-fire)"
                   strokeWidth={highlight ? '2.1' : '1.1'}
                   strokeDasharray="5 4"
                   strokeOpacity={highlight ? 0.9 : 0.3}
                   markerEnd="url(#wxKe)"
                 />
                 {flowEnabled && highlight && (
-                  <circle cx={px} cy={py} r="3.6" fill="#EB6B4D" />
+                  <circle cx={px} cy={py} r="3.6" fill="var(--el-fire-bright)" />
                 )}
               </g>
             );

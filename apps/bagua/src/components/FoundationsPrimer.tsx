@@ -757,11 +757,11 @@ export const FoundationsPrimer: React.FC<FoundationsPrimerProps> = ({
                   r="76"
                   fill={
                     activeLayer === 2
-                      ? 'rgba(78, 159, 118, 0.2)'
+                      ? 'var(--el-wood-soft)'
                       : 'var(--bg-elevated)'
                   }
                   stroke={
-                    activeLayer >= 2 ? '#4E9F76' : 'var(--border-subtle)'
+                    activeLayer >= 2 ? 'var(--el-wood)' : 'var(--border-subtle)'
                   }
                   strokeWidth={activeLayer === 2 ? 2.2 : 1}
                   style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
@@ -771,7 +771,7 @@ export const FoundationsPrimer: React.FC<FoundationsPrimerProps> = ({
                   x="0"
                   y="-55"
                   textAnchor="middle"
-                  fill="#4E9F76"
+                  fill="var(--el-wood)"
                   fontSize="10.5"
                   fontWeight="600"
                 >
@@ -826,7 +826,7 @@ export const FoundationsPrimer: React.FC<FoundationsPrimerProps> = ({
                     x="0"
                     y="164"
                     textAnchor="middle"
-                    fill="#4E86B8"
+                    fill="var(--el-water)"
                     fontSize="12"
                     fontWeight="700"
                   >
@@ -836,7 +836,7 @@ export const FoundationsPrimer: React.FC<FoundationsPrimerProps> = ({
                     x="-158"
                     y="4"
                     textAnchor="middle"
-                    fill="#4E9F76"
+                    fill="var(--el-wood)"
                     fontSize="11"
                     fontWeight="700"
                   >
@@ -846,7 +846,7 @@ export const FoundationsPrimer: React.FC<FoundationsPrimerProps> = ({
                     x="158"
                     y="4"
                     textAnchor="middle"
-                    fill="#9BAEC4"
+                    fill="var(--el-metal)"
                     fontSize="11"
                     fontWeight="700"
                   >

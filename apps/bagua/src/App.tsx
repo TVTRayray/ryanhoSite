@@ -3,8 +3,10 @@ import {
   BookOpen,
   Compass,
   GitBranch,
+  ArrowLeft,
   GraduationCap,
   Layers,
+  Monitor,
   Moon,
   Pause,
   Play,
@@ -25,11 +27,20 @@ import { WorkshopHub } from './components/WorkshopHub';
 import { KnowledgeGlossary } from './components/KnowledgeGlossary';
 
 type ActiveTab = 'foundations' | 'mingpan' | 'workshop' | 'glossary';
-type ThemeMode = 'ink' | 'paper';
+// 与主站 ryanho.cc.cd 共用的主题偏好:localStorage 'theme' 为 light / dark,缺省跟随系统。
+// index.html 里的内联脚本在绘制前已应用它,这里只负责读取和切换。
+type ThemeMode = 'system' | 'light' | 'dark';
+const THEME_ORDER: ThemeMode[] = ['system', 'light', 'dark'];
+const THEME_NAMES: Record<ThemeMode, string> = { system: '跟随系统', light: '浅色', dark: '深色' };
+
+const readTheme = (): ThemeMode => {
+  const t = document.documentElement.dataset.theme;
+  return t === 'light' || t === 'dark' ? t : 'system';
+};
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('foundations');
-  const [theme, setTheme] = useState<ThemeMode>('ink');
+  const [theme, setTheme] = useState<ThemeMode>(readTheme);
   const [arrangement, setArrangement] = useState<ArrangementMode>('houtian');
   const [orientation, setOrientation] = useState<OrientationMode>('south-up');
   const [selectedTrigram, setSelectedTrigram] = useState<TrigramId>('li');
@@ -46,8 +57,19 @@ export const App: React.FC = () => {
   );
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    const root = document.documentElement;
+    if (theme === 'system') delete root.dataset.theme;
+    else root.dataset.theme = theme;
+    try {
+      if (theme === 'system') localStorage.removeItem('theme');
+      else localStorage.setItem('theme', theme);
+    } catch {
+      // 隐私模式等情况下无法保存,本次浏览仍然生效
+    }
   }, [theme]);
+
+  const nextTheme = THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length];
+  const themeLabel = `主题:${THEME_NAMES[theme]},点击切换为${THEME_NAMES[nextTheme]}`;
 
   useEffect(() => {
     if (!isTimePlaying) return;
@@ -145,16 +167,21 @@ export const App: React.FC = () => {
           </nav>
 
           <div className="header-actions">
+            <a className="theme-toggle site-back" href="/">
+              <ArrowLeft size={15} />
+              Agent Notes
+            </a>
             <button
               type="button"
               className="theme-toggle"
-              onClick={() =>
-                setTheme((prev) => (prev === 'ink' ? 'paper' : 'ink'))
-              }
-              title="切换玄夜星盘 / 宣纸墨韵主题"
+              onClick={() => setTheme(nextTheme)}
+              title={themeLabel}
+              aria-label={themeLabel}
             >
-              {theme === 'ink' ? <Sun size={15} /> : <Moon size={15} />}
-              {theme === 'ink' ? '宣纸素本' : '玄夜星盘'}
+              {theme === 'system' && <Monitor size={15} />}
+              {theme === 'light' && <Sun size={15} />}
+              {theme === 'dark' && <Moon size={15} />}
+              {THEME_NAMES[theme]}
             </button>
           </div>
         </div>
@@ -382,12 +409,15 @@ export const App: React.FC = () => {
       </main>
 
       <footer className="footer-note">
+        <span>八卦与五行基础命盘科普示意</span>
         <span>
-          八卦与五行基础命盘科普示意 · Step 2（渐进式四步教学布局 + JS 实时动态演示）
-        </span>
-        <span>
-          参考资料索引详见「4. 总表与边界」及{' '}
-          <span className="font-mono-code">refer.md</span>
+          参考资料见「4. 总表与边界」及{' '}
+          <a
+            className="font-mono-code"
+            href="https://github.com/TVTRayray/ryanhoSite/blob/main/apps/bagua/refer.md"
+          >
+            refer.md
+          </a>
         </span>
       </footer>
     </div>

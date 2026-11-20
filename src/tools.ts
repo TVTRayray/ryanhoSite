@@ -11,6 +11,12 @@ export const TOOLS: { slug: string; name: string; desc: string; href?: string }[
 		desc: '图片、PDF、视频、JSON、文本等上百个在线小工具,在浏览器本地处理。开源项目 omni-tools 的自托管实例。',
 		href: 'https://tools.ryanho.cc.cd/',
 	},
+	{
+		slug: 'bagua',
+		name: '八卦基础命盘图鉴',
+		desc: '交互式阴阳五行科普:先天/后天八卦命盘、爻变生卦、五行生克推演与中英对照总表。',
+		href: '/bagua/',
+	},
 ];
 
 export const toolHref = (t: (typeof TOOLS)[number]) => t.href ?? `/tools/${t.slug}/`;

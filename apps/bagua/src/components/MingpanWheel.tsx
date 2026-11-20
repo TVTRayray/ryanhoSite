@@ -222,7 +222,7 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
           markerHeight="5.5"
           orient="auto-start-reverse"
         >
-          <path d="M 0 1 L 10 5 L 0 9 z" fill="#4E9F76" />
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--el-wood)" />
         </marker>
         <marker
           id="arrowVermilion"
@@ -233,7 +233,7 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
           markerHeight="5.5"
           orient="auto-start-reverse"
         >
-          <path d="M 0 1 L 10 5 L 0 9 z" fill="#D4573B" />
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="var(--el-fire)" />
         </marker>
       </defs>
 
@@ -417,13 +417,13 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
             if (t.element === selectedTrigram.element) {
               relationTag = { label: '同气', color: el.color };
             } else if (selectedEl.generates === t.element) {
-              relationTag = { label: '我生', color: '#4E9F76' };
+              relationTag = { label: '我生', color: 'var(--el-wood)' };
             } else if (selectedEl.generatedBy === t.element) {
-              relationTag = { label: '生我', color: '#61B58B' };
+              relationTag = { label: '生我', color: 'var(--el-wood-bright)' };
             } else if (selectedEl.overcomes === t.element) {
-              relationTag = { label: '我克', color: '#C79B46' };
+              relationTag = { label: '我克', color: 'var(--el-earth)' };
             } else if (selectedEl.overcomeBy === t.element) {
-              relationTag = { label: '克我', color: '#D4573B' };
+              relationTag = { label: '克我', color: 'var(--el-fire)' };
             }
           }
 
@@ -615,7 +615,7 @@ export const MingpanWheel: React.FC<MingpanWheelProps> = ({
                 key={target.id}
                 d={`M ${pFrom.x.toFixed(1)} ${pFrom.y.toFixed(1)} Q 0 0 ${pTo.x.toFixed(1)} ${pTo.y.toFixed(1)}`}
                 fill="none"
-                stroke={isGen ? '#4E9F76' : '#D4573B'}
+                stroke={isGen ? 'var(--el-wood)' : 'var(--el-fire)'}
                 strokeWidth="1.5"
                 strokeOpacity="0.72"
                 markerEnd={isGen ? 'url(#arrowJade)' : 'url(#arrowVermilion)'}

@@ -7,11 +7,12 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && npm run build:bagua",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "astro build && sudo rsync -a --delete dist/ /var/www/agent-notes/",
-    "figures": "node figures/specflow-line/build.mjs"
+    "deploy": "npm run build && sudo rsync -a --delete dist/ /var/www/agent-notes/",
+    "figures": "node figures/specflow-line/build.mjs",
+    "build:bagua": "npm --prefix apps/bagua ci --no-audit --no-fund --loglevel=error && npm --prefix apps/bagua run build -- --outDir ../../dist/bagua --emptyOutDir --logLevel warn"
   },
   "dependencies": {
     "astro": "^7.4.11"

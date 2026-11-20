@@ -52,25 +52,25 @@ export const TrigramInspector: React.FC<TrigramInspectorProps> = ({
       label: `生我者（${ELEMENTS[el.generatedBy].name}生${el.name}）`,
       hint: '能量滋养源',
       items: generatedByTrigrams,
-      color: '#4E9F76',
+      color: 'var(--el-wood)',
     },
     {
       label: `我生者（${el.name}生${ELEMENTS[el.generates].name}）`,
       hint: '向外显发',
       items: generatesTrigrams,
-      color: '#61B58B',
+      color: 'var(--el-wood-bright)',
     },
     {
       label: `克我者（${ELEMENTS[el.overcomeBy].name}克${el.name}）`,
       hint: '规则制约',
       items: overcomeByTrigrams,
-      color: '#D4573B',
+      color: 'var(--el-fire)',
     },
     {
       label: `我克者（${el.name}克${ELEMENTS[el.overcomes].name}）`,
       hint: '主动驾驭',
       items: overcomesTrigrams,
-      color: '#C79B46',
+      color: 'var(--el-earth)',
     },
   ];
 
