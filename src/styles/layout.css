@@ -1126,3 +1126,328 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+
+/* Six-Yao Coin Divination Module */
+.divination-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 22px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .divination-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.divination-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.divination-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 11px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.divination-input:focus {
+  border-color: var(--accent-gold);
+}
+
+.divination-input::placeholder {
+  color: var(--text-muted);
+}
+
+.coin-tray {
+  position: relative;
+  min-height: 245px;
+  border-radius: 18px;
+  border: 1px solid var(--border-strong);
+  background: radial-gradient(
+      circle at 50% 48%,
+      var(--accent-gold-dim),
+      transparent 68%
+    ),
+    var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 28px 18px 20px;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.coin-tray:hover {
+  border-color: var(--accent-gold);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+.coin-tray-ring {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: 1px dashed var(--ring-divider);
+  pointer-events: none;
+}
+
+.coins-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.coin-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  will-change: transform;
+}
+
+.ancient-coin {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+  will-change: transform;
+}
+
+.coin-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.coin-face-caption {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+}
+
+.coin-tray-hint {
+  position: relative;
+  z-index: 2;
+  font-size: 0.82rem;
+  color: var(--accent-gold);
+  text-align: center;
+}
+
+.divination-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.primary-cast-btn {
+  flex: 1;
+  min-width: 190px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--accent-gold);
+  background: var(--accent-gold-dim);
+  color: var(--accent-gold);
+  font-size: 0.92rem;
+  font-weight: 700;
+  transition: all 0.18s ease;
+}
+
+.primary-cast-btn:hover:not(:disabled) {
+  background: var(--sector-active);
+  transform: translateY(-1px);
+}
+
+.primary-cast-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.coin-rules-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.coin-rules-strip strong {
+  color: var(--accent-gold);
+}
+
+/* 6-Line Hexagram Stack */
+.hexagram-stack-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+.hex-line-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 118px;
+  align-items: center;
+  gap: 12px;
+}
+
+.hex-line-row.with-divider {
+  padding-bottom: 10px;
+  margin-bottom: 2px;
+  border-bottom: 1px dashed var(--ring-divider);
+}
+
+.hex-line-pos {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.hex-line-graphic {
+  height: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hex-line-placeholder {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  border: 1px dashed var(--ring-divider);
+}
+
+.hex-bar-yang {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent-gold);
+}
+
+.hex-bar-yin {
+  flex: 1;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--text-secondary);
+}
+
+.hex-bar-yang.is-moving,
+.hex-bar-yin.is-moving {
+  background: var(--accent-vermilion);
+  box-shadow: 0 0 10px rgba(209, 86, 59, 0.45);
+}
+
+.hex-line-meta {
+  font-size: 0.74rem;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+.divination-result-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hex-result-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hex-card-mini {
+  flex: 1;
+  min-width: 135px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hex-card-mini.changed {
+  border-color: var(--accent-vermilion);
+  background: var(--accent-vermilion-soft);
+}
+
+.hex-card-tag {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.hex-card-symbol {
+  font-size: 2.5rem;
+  line-height: 1.05;
+  color: var(--accent-gold);
+}
+
+.hex-card-mini.changed .hex-card-symbol {
+  color: var(--accent-vermilion);
+}
+
+.hex-card-name {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hex-card-trend {
+  font-size: 0.76rem;
+  color: var(--accent-gold);
+}
+
+.hex-transform-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--accent-vermilion);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.clickable-attr {
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.clickable-attr:hover {
+  border-color: var(--accent-gold);
+  background: var(--accent-gold-dim);
+}
